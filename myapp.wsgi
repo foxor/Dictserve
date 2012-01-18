@@ -22,6 +22,9 @@ def stylesheet(path, contents):
 def script_tag(path, contents):
     return '<script type="text/javascript" src="%s"></script>' % fq_to_doc_root(path)
 
+def nop(*args, **kwargs):
+    return ""
+
 ignore_dirs = [
     re.compile('.*\.git'),
     re.compile('.*/\..*'),
@@ -44,26 +47,26 @@ def serve_template(path):
                     break
     for mapping in mappings:
         data[mapping[2]] = '\n'.join(data.get(mapping[2], []))
-    return template % data, "text/html"
+    return template % data, "text/html", '200 OK' 
 
 def serve_css(path):
     fptr = open(path, 'r')
     content = fptr.read()
     fptr.close()
-    return content, "text/css"
+    return content, "text/css", '200 OK' 
 
 def serve_js(path):
     fptr = open(path, 'r')
     content = fptr.read()
     fptr.close()
-    return content, "text/javascript"
+    return content, "text/javascript", '200 OK' 
 
-def nop(*args, **kwargs):
-    return '', None
+def no_serve(*args, **kwargs):
+    return 'Auauthorized', 'text/html', '403 Forbidden'
 
 mappings = [
     #regex, template prep function, template index, direct serve transform
-    (re.compile('.*\.swp'), nop, 'unused', nop),
+    (re.compile('.*\.swp'), nop, 'unused', no_serve),
     (re.compile('.*\.css'), stylesheet, 'style', serve_css),
     (re.compile('.*\.js'), script_tag, 'script', serve_js),
     (re.compile('.*'), no_transform, 'content', serve_template),
@@ -77,12 +80,11 @@ def get_file_contents(environ):
     for mapping in mappings:
         if mapping[0].match(path):
             files[path] = (modified, mapping[3](path))
-            break
-    return files[path][1]
+            return files[path][1]
+    return "Error 404", "text/html", "404 Not Found"
 
 def application(environ, start_response):
-    status = '200 OK' 
-    output, type = get_file_contents(environ)
+    output, type, status = get_file_contents(environ)
 
     response_headers = [('Content-type', type),
                         ('Content-Length', str(len(output)))]
