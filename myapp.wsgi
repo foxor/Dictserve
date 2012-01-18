@@ -44,22 +44,28 @@ def serve_template(path):
                     break
     for mapping in mappings:
         data[mapping[2]] = '\n'.join(data.get(mapping[2], []))
-    return template % data
+    return template % data, "text/html"
 
-def serve_file(path):
+def serve_css(path):
     fptr = open(path, 'r')
     content = fptr.read()
     fptr.close()
-    return content
+    return content, "text/css"
+
+def serve_js(path):
+    fptr = open(path, 'r')
+    content = fptr.read()
+    fptr.close()
+    return content, "text/javascript"
 
 def nop(*args, **kwargs):
-    return ''
+    return '', None
 
 mappings = [
     #regex, template prep function, template index, direct serve transform
     (re.compile('.*\.swp'), nop, 'unused', nop),
-    (re.compile('.*\.css'), stylesheet, 'style', serve_file),
-    (re.compile('.*\.js'), script_tag, 'script', serve_file),
+    (re.compile('.*\.css'), stylesheet, 'style', serve_css),
+    (re.compile('.*\.js'), script_tag, 'script', serve_js),
     (re.compile('.*'), no_transform, 'content', serve_template),
 ]
 
@@ -76,9 +82,9 @@ def get_file_contents(environ):
 
 def application(environ, start_response):
     status = '200 OK' 
-    output = get_file_contents(environ)
+    output, type = get_file_contents(environ)
 
-    response_headers = [('Content-type', 'text/html'),
+    response_headers = [('Content-type', type),
                         ('Content-Length', str(len(output)))]
     start_response(status, response_headers)
 
