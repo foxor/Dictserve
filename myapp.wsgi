@@ -57,7 +57,7 @@ def nop(*args, **kwargs):
 
 mappings = [
     #regex, template prep function, template index, direct serve transform
-    (re.compile('.*.swp'), nop, 'unused', nop),
+    (re.compile('.*\.swp'), nop, 'unused', nop),
     (re.compile('.*\.css'), stylesheet, 'style', serve_file),
     (re.compile('.*\.js'), script_tag, 'script', serve_file),
     (re.compile('.*'), no_transform, 'content', serve_template),
