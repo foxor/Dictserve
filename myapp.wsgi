@@ -22,9 +22,16 @@ def stylesheet(path, contents):
 def script_tag(path, contents):
     return '<script type="text/javascript" src="%s"></script>' % fq_to_doc_root(path)
 
+ignore_dirs = [
+    re.compile('.*\.git'),
+    re.compile('.*/\..*'),
+]
+
 def serve_template(path):
     data = {}
-    for root, _, file_paths in os.walk(path):
+    for root, dirs, file_paths in os.walk(path):
+        dirs[:] = [dir for dir in dirs if not [reason for reason in ignore_dirs if reason.match(dir)]]
+        file_paths = [f for f in file_paths if not [reason for reason in ignore_dirs if reason.match(f)]]
         for file_path in file_paths:
             full_path = root + '/' + file_path
             fptr = open(full_path, 'r')
