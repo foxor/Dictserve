@@ -1,8 +1,8 @@
 import os.path, re
 
-DOCUMENT_ROOT = '/var/www'
+DOCUMENT_ROOT = '/var/www-ij'
 
-fptr = open('/var/www/django/template','r')
+fptr = open('%s/django/template' % DOCUMENT_ROOT,'r')
 template = fptr.read()
 fptr.close()
 
@@ -73,7 +73,7 @@ mappings = [
 ]
 
 def get_file_contents(environ):
-    path = "/var/www%s" % (environ['REQUEST_URI'])
+    path = "%s%s" % (DOCUMENT_ROOT, environ['REQUEST_URI'])
     modified = os.path.getmtime(path)
     if path in files and files[path][0] >= modified:
         return files[path][1]
